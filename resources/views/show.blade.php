@@ -1,13 +1,14 @@
-
-<div align="center"
 @if($lastResult == true)
-    style="color:green">
+    <div align="center"style="color:green">
+        <p>{{ $lastRussian }} - {{ $lastEnglish }}</p>
+    </div>
 @else
-    style=color:red">
+    <div align="center"style="color:red">
+        <p>{{ $lastRussian }} - {{ $lastEnglish }}</p>
+    </div>
 @endif
 
-    <p>{{ $lastRussian }} - {{ $lastEnglish }}</p>
-</div>
+
 
 <form action="{{ route('check') }}" align="center" method="post">
     @csrf

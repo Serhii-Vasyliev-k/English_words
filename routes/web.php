@@ -18,3 +18,6 @@ Route::get('/', function () {
 Route::get('/show', 'WordController@show')->name('show');
 Route::post('/check', 'WordController@check')->name('check');
 
+Route::get('/add', 'WordController@create')->name('word_add');
+Route::post('/add', 'WordController@store')->name('store');
+

@@ -7,14 +7,12 @@ use App\Word;
 
 class WordController extends Controller
 {
-    public $lastEnglish = 'default';
-    public $lastRussian = 'поумолчанию';
-    public $lastResult = true;
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
+
     public function index()
     {
         //
@@ -26,16 +24,56 @@ class WordController extends Controller
 
         if (strcasecmp($word->english, $request['english']))
         {
-            echo 'неверно';
             $word->repit++;
             $word->save();
+            $lastResult = false;
         }
         else {
-            echo 'верно';
             $word->repit--;
             $word->save();
+            if ($word->repit == 0)
+            {
+                return $this->destroy($word->id);
+            }
+            $lastResult = true;
         }
-        return redirect(route('show'));
+        return redirect(route('show', ['lastId' => $word->id, 'lastResult' => $lastResult]));
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show()
+    {
+        $request = request();
+        $word = Word::all()->where('active','=', '1')->random();
+
+        if ($request->has('lastId')) {
+
+            $lastWord = Word::find($request['lastId']);
+
+            return view('show', [
+                'id' => $word->id,
+                'russian' => $word->russian,
+                'lastId' => $request['lastId'],
+                'lastResult' => $request['lastResult'],
+                'lastEnglish' => $lastWord->english,
+                'lastRussian' => $lastWord->russian
+            ]);
+        } else {
+            return view('show', [
+                'id' => $word->id,
+                'russian' => $word->russian,
+                'lastId' => '',
+                'lastResult' => $request['lastResult'],
+                'lastEnglish' => '',
+                'lastRussian' => ''
+            ]);
+        }
+
     }
 
     /**
@@ -45,7 +83,7 @@ class WordController extends Controller
      */
     public function create()
     {
-        //
+        return view('add');
     }
 
     /**
@@ -56,28 +94,15 @@ class WordController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $word = new Word();
+        $word->english = $request['english'];
+        $word->russian = $request['russian'];
+        $word->repit = 10;
+        $word->save();
+        echo 'vipupu';
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id = 1)
-    {
 
-        $word = Word::find(mt_rand(1,Word::count()));
-
-        return view('show', [
-            'lastEnglish' => $this->lastEnglish,
-            'lastRussian' => $this->lastRussian,
-            'lastResult' => $this->lastResult,
-            'id' => $word->id,
-            'russian' => $word->russian
-        ]);
-    }
 
     /**
      * Show the form for editing the specified resource.
@@ -110,6 +135,9 @@ class WordController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $word = Word::find($id);
+        $word->active = false;
+        $word->save();
+        return redirect(route('show'))  ;
     }
 }
